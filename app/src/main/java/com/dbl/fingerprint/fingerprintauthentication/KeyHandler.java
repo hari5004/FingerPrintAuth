@@ -55,9 +55,9 @@ public class KeyHandler {
 
     }
 
-    public String getLoginCredentials(PrivateKey privateKeyEntry) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public String getLoginCredentials(PrivateKey privateKeyEntry,Cipher cipher) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         String encryptString = sharedPreferences.getString("data_for_login", "");
-        return decryptRSA(privateKeyEntry, encryptString);
+        return decryptRSA(privateKeyEntry, encryptString,cipher);
     }
 
     public KeyPair generateKey() {
@@ -69,6 +69,7 @@ public class KeyHandler {
                         KeyProperties.PURPOSE_DECRYPT)
                         .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
                         .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_OAEP)
+                        .setUserAuthenticationRequired(true)
                         .build();
                 KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore");
                 keyPairGenerator.initialize(keyGenParameterSpec);
@@ -86,11 +87,11 @@ public class KeyHandler {
         return null;
     }
 
-    public void saveLoginCredentials(KeyPair keypair) {
+    public void saveLoginCredentials(Cipher cipher) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         try {
-            PublicKey publicKey = keypair.getPublic();
-            String encryptedString = encryptRSA(publicKey, "Hello");
+            //PublicKey publicKey = keypair.getPublic();
+            String encryptedString = encryptRSA( "Hello",cipher);
             editor.putString("data_for_login", encryptedString);
             editor.apply();
         } catch (Exception e) {
@@ -98,16 +99,16 @@ public class KeyHandler {
         }
     }
 
-    private String encryptRSA(PublicKey publicKey, String plainString) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+    private String encryptRSA( String plainString,Cipher cipher) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException,KeyStoreException {
+        //Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
+        //cipher.init(Cipher.ENCRYPT_MODE, publicKey);
         encryptedBytes = cipher.doFinal(plainString.getBytes());
         return Base64.encodeToString(encryptedBytes,Base64.DEFAULT);
     }
 
-    private String decryptRSA(PrivateKey privateKey, String encryptedString) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
-        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+    private String decryptRSA(PrivateKey privateKey, String encryptedString,Cipher cipher) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+//        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
+//        cipher.init(Cipher.DECRYPT_MODE, privateKey);
         decryptedBytes = cipher.doFinal(Base64.decode(encryptedString,Base64.DEFAULT));
         return new String(decryptedBytes);
     }

@@ -11,6 +11,9 @@ import android.support.v4.app.ActivityCompat;
 import android.widget.Toast;
 
 import java.security.KeyPair;
+import java.security.PrivateKey;
+
+import javax.crypto.Cipher;
 
 
 public class FingerprintHandler extends FingerprintManager.AuthenticationCallback {
@@ -60,15 +63,34 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
 
     @Override
     public void onAuthenticationSucceeded(FingerprintManager.AuthenticationResult result) {
-        saveData();
+        if(mode==0)
+        saveData(cryptoObject.getCipher());
+        else if(mode==1){
+            retriveData(cryptoObject.getCipher());
+
+        }
     }
-
-    private void saveData() {
+private void retriveData(Cipher cipher) {
+        try {
+           KeyHandler keyHandler = new KeyHandler(context);
+            PrivateKey privateKey = keyHandler.getPrivateKey();
+            String decryptedString = keyHandler.getLoginCredentials(privateKey,cipher);
+            Toast.makeText(context,
+                    decryptedString,
+                    Toast.LENGTH_LONG).show();
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(context,
+                    e.getMessage()+"!!!!",
+                    Toast.LENGTH_LONG).show();
+        }
+}
+    private void saveData(Cipher cipher) {
         KeyHandler keyHandler = new KeyHandler(context);
-        KeyPair keyPair = keyHandler.generateKey();
-        if (keyPair != null)
-            keyHandler.saveLoginCredentials(keyPair);
-
+        //KeyPair keyPair = keyHandler.generateKey();
+       // if (keyPair != null)
+            keyHandler.saveLoginCredentials(cipher);
         Intent intent = new Intent(context, FingerPrint.class);
         context.startActivity(intent);
     }
