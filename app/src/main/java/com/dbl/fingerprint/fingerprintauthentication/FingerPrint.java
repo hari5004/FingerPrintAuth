@@ -15,22 +15,25 @@ public class FingerPrint extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_finger_print);
-
     }
 
     public void EnrollFingerprint(View view) {
         Intent intent = new Intent(this, FingerPrintScan.class);
+        intent.putExtra("mode","0");
         this.startActivity(intent);
     }
 
     public void Login(View view) {
         try {
-            KeyHandler keyHandler = new KeyHandler(this);
-            PrivateKey privateKey = keyHandler.getPrivateKey();
-            String decryptedString = keyHandler.getLoginCredentials(privateKey);
-            Toast.makeText(this,
-                    decryptedString,
-                    Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(this, FingerPrintScan.class);
+            intent.putExtra("mode",1);
+            this.startActivity(intent);
+//            KeyHandler keyHandler = new KeyHandler(this);
+//            PrivateKey privateKey = keyHandler.getPrivateKey();
+//            String decryptedString = keyHandler.getLoginCredentials(privateKey);
+//            Toast.makeText(this,
+//                    decryptedString,
+//                    Toast.LENGTH_LONG).show();
         } catch (Exception e) {
             Log.d("Finger", e.getMessage());
         }
